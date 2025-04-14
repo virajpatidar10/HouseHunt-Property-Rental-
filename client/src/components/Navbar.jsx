@@ -20,9 +20,9 @@ const Navbar = () => {
 
   return (
     <div className="navbar">
-      <a href="/">
+      <Link to="/">
         <img src="/assets/logo.png" alt="logo" />
-      </a>
+      </Link>
 
       <div className="navbar_search">
         <input
@@ -61,10 +61,14 @@ const Navbar = () => {
             <Person sx={{ color: variables.darkgrey }} />
           ) : (
             <img
-              src={`http://localhost:3001/${user.profileImagePath.replace(
-                "public",
-                ""
-              )}`}
+              src={
+                user?.profileImagePath
+                  ? `http://localhost:3001/${user.profileImagePath.replace(
+                      "public",
+                      ""
+                    )}`
+                  : "/assets/default-profile.png"
+              }
               alt="profile photo"
               style={{ objectFit: "cover", borderRadius: "50%" }}
             />

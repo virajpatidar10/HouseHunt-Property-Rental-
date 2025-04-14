@@ -1,7 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  user: null,
+  user: {
+    tripList: [],
+    wishList: [],
+    propertyList: [],
+    reservationList: [],
+  },
   token: null,
 };
 
@@ -10,11 +15,22 @@ export const userSlice = createSlice({
   initialState,
   reducers: {
     setLogin: (state, action) => {
-      state.user = action.payload.user;
+      state.user = {
+        ...action.payload.user,
+        tripList: action.payload.user?.tripList || [],
+        wishList: action.payload.user?.wishList || [],
+        propertyList: action.payload.user?.propertyList || [],
+        reservationList: action.payload.user?.reservationList || [],
+      };
       state.token = action.payload.token;
     },
     setLogout: (state) => {
-      state.user = null;
+      state.user = {
+        tripList: [],
+        wishList: [],
+        propertyList: [],
+        reservationList: [],
+      };
       state.token = null;
     },
     setListings: (state, action) => {

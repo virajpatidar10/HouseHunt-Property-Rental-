@@ -9,11 +9,11 @@ import { DateRange } from "react-date-range";
 import Loader from "../components/Loader";
 import Navbar from "../components/Navbar";
 import { useSelector } from "react-redux";
-import Footer from "../components/Footer"
+import Footer from "../components/Footer";
 
 const ListingDetails = () => {
   const [loading, setLoading] = useState(true);
-
+  const [error, setError] = useState(null);
   const { listingId } = useParams();
   const [listing, setListing] = useState(null);
 
@@ -26,20 +26,23 @@ const ListingDetails = () => {
         }
       );
 
+      if (!response.ok) {
+        throw new Error("Failed to fetch listing details");
+      }
+
       const data = await response.json();
       setListing(data);
       setLoading(false);
     } catch (err) {
       console.log("Fetch Listing Details Failed", err.message);
+      setError(err.message);
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     getListingDetails();
-  }, []);
-
-  console.log(listing)
-
+  }, [listingId]);
 
   /* BOOKING CALENDAR */
   const [dateRange, setDateRange] = useState([
@@ -51,52 +54,56 @@ const ListingDetails = () => {
   ]);
 
   const handleSelect = (ranges) => {
-    // Update the selected date range when user makes a selection
     setDateRange([ranges.selection]);
   };
 
   const start = new Date(dateRange[0].startDate);
   const end = new Date(dateRange[0].endDate);
-  const dayCount = Math.round(end - start) / (1000 * 60 * 60 * 24); // Calculate the difference in day unit
+  const dayCount = Math.round(end - start) / (1000 * 60 * 60 * 24);
 
   /* SUBMIT BOOKING */
-  const customerId = useSelector((state) => state?.user?._id)
-
-  const navigate = useNavigate()
+  const customerId = useSelector((state) => state?.user?._id);
+  const navigate = useNavigate();
 
   const handleSubmit = async () => {
     try {
       const bookingForm = {
         customerId,
         listingId,
-        hostId: listing.creator._id,
+        hostId: listing?.creator?._id,
         startDate: dateRange[0].startDate.toDateString(),
         endDate: dateRange[0].endDate.toDateString(),
-        totalPrice: listing.price * dayCount,
-      }
+        totalPrice: listing?.price * dayCount,
+      };
 
       const response = await fetch("http://localhost:3001/bookings/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(bookingForm)
-      })
+        body: JSON.stringify(bookingForm),
+      });
 
       if (response.ok) {
-        navigate(`/${customerId}/trips`)
+        navigate(`/${customerId}/trips`);
+      } else {
+        const data = await response.json();
+        throw new Error(data.message || "Failed to create booking");
       }
     } catch (err) {
-      console.log("Submit Booking Failed.", err.message)
+      console.log("Submit Booking Failed.", err.message);
+      alert(err.message);
     }
-  }
+  };
 
-  return loading ? (
-    <Loader />
-  ) : (
+  if (loading) return <Loader />;
+  if (error) return <div className="error-message">{error}</div>;
+  if (!listing) return <div className="error-message">Listing not found</div>;
+
+  return (
     <>
       <Navbar />
-      
+
       <div className="listing-details">
         <div className="title">
           <h1>{listing.title}</h1>
@@ -104,8 +111,9 @@ const ListingDetails = () => {
         </div>
 
         <div className="photos">
-          {listing.listingPhotoPaths?.map((item) => (
+          {listing.listingPhotoPaths?.map((item, index) => (
             <img
+              key={index}
               src={`http://localhost:3001/${item.replace("public", "")}`}
               alt="listing photo"
             />
@@ -122,18 +130,23 @@ const ListingDetails = () => {
         </p>
         <hr />
 
-        <div className="profile">
-          <img
-            src={`http://localhost:3001/${listing.creator.profileImagePath.replace(
-              "public",
-              ""
-            )}`}
-          />
-          <h3>
-            Hosted by {listing.creator.firstName} {listing.creator.lastName}
-          </h3>
-        </div>
-        <hr />
+        {listing.creator && (
+          <>
+            <div className="profile">
+              <img
+                src={`http://localhost:3001/${listing.creator.profileImagePath?.replace(
+                  "public",
+                  ""
+                )}`}
+                alt={`${listing.creator.firstName} ${listing.creator.lastName}`}
+              />
+              <h3>
+                Hosted by {listing.creator.firstName} {listing.creator.lastName}
+              </h3>
+            </div>
+            <hr />
+          </>
+        )}
 
         <h3>Description</h3>
         <p>{listing.description}</p>
@@ -147,7 +160,7 @@ const ListingDetails = () => {
           <div>
             <h2>What this place offers?</h2>
             <div className="amenities">
-              {listing.amenities[0].split(",").map((item, index) => (
+              {listing.amenities?.[0]?.split(",").map((item, index) => (
                 <div className="facility" key={index}>
                   <div className="facility_icon">
                     {
@@ -165,19 +178,24 @@ const ListingDetails = () => {
             <h2>How long do you want to stay?</h2>
             <div className="date-range-calendar">
               <DateRange ranges={dateRange} onChange={handleSelect} />
-              {dayCount > 1 ? (
-                <h2>
-                  ${listing.price} x {dayCount} nights
-                </h2>
-              ) : (
-                <h2>
-                  ${listing.price} x {dayCount} night
-                </h2>
-              )}
-
-              <h2>Total price: ${listing.price * dayCount}</h2>
-              <p>Start Date: {dateRange[0].startDate.toDateString()}</p>
-              <p>End Date: {dateRange[0].endDate.toDateString()}</p>
+              <div className="booking-summary">
+                <div className="price-details">
+                  {dayCount > 1 ? (
+                    <h3>
+                      ₹{listing.price} x {dayCount} nights
+                    </h3>
+                  ) : (
+                    <h3>
+                      ₹{listing.price} x {dayCount} night
+                    </h3>
+                  )}
+                  <h3>Total price: ₹{listing.price * dayCount}</h3>
+                </div>
+                <div className="dates">
+                  <p>Check-in: {dateRange[0].startDate.toDateString()}</p>
+                  <p>Check-out: {dateRange[0].endDate.toDateString()}</p>
+                </div>
+              </div>
 
               <button className="button" type="submit" onClick={handleSubmit}>
                 BOOKING

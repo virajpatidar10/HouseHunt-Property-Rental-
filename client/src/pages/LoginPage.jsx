@@ -5,15 +5,41 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const dispatch = useDispatch();
 
   const navigate = useNavigate();
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    setError(""); // Clear error when user types
+  };
+
+  const validateForm = () => {
+    if (!formData.email || !formData.password) {
+      setError("All fields are required!");
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!validateForm()) return;
+
+    setLoading(true);
+    setError("");
 
     try {
       const response = await fetch("http://localhost:3001/auth/login", {
@@ -21,23 +47,27 @@ const LoginPage = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(formData),
       });
 
-      /* Get data after fetching */
-      const loggedIn = await response.json();
+      const data = await response.json();
 
-      if (loggedIn) {
-        dispatch(
-          setLogin({
-            user: loggedIn.user,
-            token: loggedIn.token,
-          })
-        );
-        navigate("/");
+      if (!response.ok) {
+        throw new Error(data.message || "Login failed");
       }
+
+      dispatch(
+        setLogin({
+          user: data.user,
+          token: data.token,
+        })
+      );
+      navigate("/");
     } catch (err) {
-      console.log("Login failed", err.message);
+      console.error("Login failed:", err);
+      setError(err.message || "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -45,23 +75,29 @@ const LoginPage = () => {
     <div className="login">
       <div className="login_content">
         <form className="login_content_form" onSubmit={handleSubmit}>
+          {error && <div className="error-message">{error}</div>}
           <input
             type="email"
+            name="email"
             placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={formData.email}
+            onChange={handleChange}
             required
           />
           <input
             type="password"
+            name="password"
             placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={formData.password}
+            onChange={handleChange}
             required
+            minLength={6}
           />
-          <button type="submit">LOG IN</button>
+          <button type="submit" disabled={loading}>
+            {loading ? "LOGGING IN..." : "LOG IN"}
+          </button>
         </form>
-        <a href="/register">Don't have an account? Sign In Here</a>
+        <a href="/register">Don't have an account? Sign Up Here</a>
       </div>
     </div>
   );

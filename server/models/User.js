@@ -1,12 +1,12 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema(
   {
-    firstname: {
+    firstName: {
       type: String,
       required: true,
     },
-    lastname: {
+    lastName: {
       type: String,
       required: true,
     },
@@ -28,7 +28,12 @@ const UserSchema = new mongoose.Schema(
       default: [],
     },
     wishList: {
-      type: Array,
+      type: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Listing",
+        },
+      ],
       default: [],
     },
     propertyList: {
@@ -38,10 +43,10 @@ const UserSchema = new mongoose.Schema(
     reservationList: {
       type: Array,
       default: [],
-    }
+    },
   },
   { timestamps: true }
-)
+);
 
-const User = mongoose.model("User", UserSchema)
+const User = mongoose.model("User", UserSchema);
 module.exports = User;

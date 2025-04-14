@@ -28,13 +28,7 @@ import {
 } from "react-icons/bi";
 import { BsSnow, BsFillDoorOpenFill, BsPersonWorkspace } from "react-icons/bs";
 import { IoDiamond } from "react-icons/io5";
-import {
-  MdOutlineVilla,
-  MdMicrowave,
-  MdBalcony,
-  MdYard,
-  MdPets,
-} from "react-icons/md";
+import { MdOutlineVilla, MdMicrowave, MdBalcony, MdYard, MdPets } from "react-icons/md";
 import {
   PiBathtubFill,
   PiCoatHangerFill,
@@ -202,7 +196,7 @@ export const facilities = [
   },
   {
     name: "Dedicated workspace",
-    icon: <BsPersonWorkspace />,
+    icon: <BsPersonWorkspace />
   },
   {
     name: "Air Conditioning",
@@ -270,10 +264,10 @@ export const facilities = [
   },
   {
     name: "Self check-in",
-    icon: <FaKey />,
+    icon: <FaKey />
   },
   {
     name: " Pet allowed",
-    icon: <MdPets />,
-  },
+    icon: <MdPets />
+  }
 ];

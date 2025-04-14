@@ -3,6 +3,7 @@ const multer = require("multer");
 
 const Listing = require("../models/Listing");
 const User = require("../models/User");
+const Booking = require("../models/Booking");
 
 /* Configuration Multer for File Upload */
 const storage = multer.diskStorage({
@@ -142,6 +143,47 @@ router.get("/:listingId", async (req, res) => {
     res
       .status(404)
       .json({ message: "Listing can not found!", error: err.message });
+  }
+});
+
+/* DELETE LISTING */
+router.delete("/:listingId", async (req, res) => {
+  try {
+    const { listingId } = req.params;
+    const listing = await Listing.findById(listingId);
+
+    if (!listing) {
+      return res.status(404).json({ message: "Listing not found!" });
+    }
+
+    // Check if the user is the creator of the listing
+    if (listing.creator.toString() !== req.body.userId) {
+      return res
+        .status(403)
+        .json({ message: "You can only delete your own listings!" });
+    }
+
+    // Remove the listing from all users' wishlists
+    await User.updateMany(
+      { wishList: listingId },
+      { $pull: { wishList: listingId } }
+    );
+
+    // Delete all associated bookings
+    await Booking.deleteMany({ listingId });
+
+    // Delete the listing
+    await Listing.findByIdAndDelete(listingId);
+
+    res.status(200).json({
+      message:
+        "Listing, associated bookings, and wishlist entries deleted successfully!",
+    });
+  } catch (err) {
+    console.log(err);
+    res
+      .status(400)
+      .json({ message: "Failed to delete listing!", error: err.message });
   }
 });
 

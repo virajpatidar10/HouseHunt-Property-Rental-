@@ -8,7 +8,7 @@
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  background: url("../../public/assets/register.jpeg") center;
+  background: url("../../public/assets/register.jpg") center;
   background-size: cover;
 
   &_content {
@@ -39,13 +39,13 @@
         padding: 7px 15px;
         background-color: transparent;
         border: none;
-        border-bottom: 1px solid rgba(246, 3, 60, 0.3);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.3);
         outline: none;
         text-align: center;
         color: white;
 
         input:not(:placeholder-shown):focus {
-          background: transparent;  
+          background: transparent; /* or background: none; */
         }
 
         &::placeholder {
@@ -61,7 +61,7 @@
         gap: 9px;
         cursor: pointer;
         color: white;
-        font-size: 18px;
+        font-size: 14px;
 
         img {
           width: 25px;

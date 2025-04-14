@@ -52,22 +52,12 @@ const CreateListing = () => {
     }
   };
 
-  /* UPLOAD, DRAG & DROP, REMOVE PHOTOS */
+  /* UPLOAD & REMOVE PHOTOS */
   const [photos, setPhotos] = useState([]);
 
   const handleUploadPhotos = (e) => {
-    const newPhotos = e.target.files;
+    const newPhotos = Array.from(e.target.files);
     setPhotos((prevPhotos) => [...prevPhotos, ...newPhotos]);
-  };
-
-  const handleDragPhoto = (result) => {
-    if (!result.destination) return;
-
-    const items = Array.from(photos);
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reorderedItem);
-
-    setPhotos(items);
   };
 
   const handleRemovePhoto = (indexToRemove) => {
@@ -381,84 +371,49 @@ const CreateListing = () => {
             </div>
 
             <h3>Add some photos of your place</h3>
-            <DragDropContext onDragEnd={handleDragPhoto}>
-              <Droppable droppableId="photos" direction="horizontal">
-                {(provided) => (
-                  <div
-                    className="photos"
-                    {...provided.droppableProps}
-                    ref={provided.innerRef}
-                  >
-                    {photos.length < 1 && (
-                      <>
-                        <input
-                          id="image"
-                          type="file"
-                          style={{ display: "none" }}
-                          accept="image/*"
-                          onChange={handleUploadPhotos}
-                          multiple
+            <div className="photos-container">
+              <input
+                id="image"
+                type="file"
+                style={{ display: "none" }}
+                accept="image/*"
+                onChange={handleUploadPhotos}
+                multiple
+              />
+              <div className="photos">
+                {photos.length === 0 ? (
+                  <label htmlFor="image" className="alone">
+                    <div className="icon">
+                      <IoIosImages />
+                    </div>
+                    <p>Upload from your device</p>
+                  </label>
+                ) : (
+                  <>
+                    {photos.map((photo, index) => (
+                      <div key={`photo-${index}`} className="photo">
+                        <img
+                          src={URL.createObjectURL(photo)}
+                          alt={`place-${index + 1}`}
                         />
-                        <label htmlFor="image" className="alone">
-                          <div className="icon">
-                            <IoIosImages />
-                          </div>
-                          <p>Upload from your device</p>
-                        </label>
-                      </>
-                    )}
-
-                    {photos.length >= 1 && (
-                      <>
-                        {photos.map((photo, index) => {
-                          return (
-                            <Draggable
-                              key={index}
-                              draggableId={index.toString()}
-                              index={index}
-                            >
-                              {(provided) => (
-                                <div
-                                  className="photo"
-                                  ref={provided.innerRef}
-                                  {...provided.draggableProps}
-                                  {...provided.dragHandleProps}
-                                >
-                                  <img
-                                    src={URL.createObjectURL(photo)}
-                                    alt="place"
-                                  />
-                                  <button
-                                    type="button"
-                                    onClick={() => handleRemovePhoto(index)}
-                                  >
-                                    <BiTrash />
-                                  </button>
-                                </div>
-                              )}
-                            </Draggable>
-                          );
-                        })}
-                        <input
-                          id="image"
-                          type="file"
-                          style={{ display: "none" }}
-                          accept="image/*"
-                          onChange={handleUploadPhotos}
-                          multiple
-                        />
-                        <label htmlFor="image" className="together">
-                          <div className="icon">
-                            <IoIosImages />
-                          </div>
-                          <p>Upload from your device</p>
-                        </label>
-                      </>
-                    )}
-                  </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemovePhoto(index)}
+                        >
+                          <BiTrash />
+                        </button>
+                      </div>
+                    ))}
+                    <label htmlFor="image" className="together">
+                      <div className="icon">
+                        <IoIosImages />
+                      </div>
+                      <p>Upload from your device</p>
+                    </label>
+                  </>
                 )}
-              </Droppable>
-            </DragDropContext>
+              </div>
+            </div>
 
             <h3>What make your place attractive and exciting?</h3>
             <div className="description">
