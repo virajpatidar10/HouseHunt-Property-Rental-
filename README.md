@@ -1,6 +1,3 @@
-# HouseHunt 
-A Code Repo for smart bridge project 
-
 # HouseHunt
 
 HouseHunt is a full-stack web application for property rentals and bookings, similar to Airbnb. Users can list their properties, browse available listings, and make bookings.
